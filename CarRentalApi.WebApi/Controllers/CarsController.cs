@@ -1,5 +1,6 @@
 ﻿using CarRentalApi.Business.Operations.Car;
 using CarRentalApi.Business.Operations.Car.CarDtos;
+using CarRentalApi.WebApi.Exceptions;
 using CarRentalApi.WebApi.Filters;
 using CarRentalApi.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,8 @@ namespace CarRentalApi.WebApi.Controllers
 
             if(car is null)
             {
-                return NotFound();
+                // return NotFound();
+                throw new NotFoundException($"{id}'li araç bulunamadı");
             }
             else
             {

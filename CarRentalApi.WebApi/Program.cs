@@ -96,7 +96,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMaintenenceMode(); // middleware added
+//app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseGlobalException(); // Global Exception Middleware added
+app.UseMaintenenceMode(); // Maintenence middleware added
 
 app.UseHttpsRedirection();
 
