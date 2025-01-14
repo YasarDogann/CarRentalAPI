@@ -1,4 +1,5 @@
 ﻿using CarRentalApi.Business.Operations.Feature.Dtos;
+using CarRentalApi.Business.Operations.User.Dtos;
 using CarRentalApi.Business.Types;
 using System;
 using System.Collections.Generic;
@@ -13,5 +14,6 @@ namespace CarRentalApi.Business.Operations.Feature
         Task<ServiceMessage> AddFeature(AddFeatureDto feature);
         Task<ServiceMessage> DeleteFeature(int id);
         Task<ServiceMessage> UpdateFeature(UpdateFeatureDto feature);
+        Task<List<FeatureDto>> GetAllFeatures();
     }
 }

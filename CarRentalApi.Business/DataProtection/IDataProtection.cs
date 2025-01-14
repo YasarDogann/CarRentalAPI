@@ -8,7 +8,7 @@ namespace CarRentalApi.Business.DataProtection
 {
     public interface IDataProtection
     {
-        public string Protect(string text);  // gönderilen metni şifreli hale getircek
-        public string UnProtect(string protectedText);
+        public string Protect(string text);  // gönderilen bir metni şifreleyip geri dönecek method
+        public string UnProtect(string protectedText); // gelen şifreli metni normal metne çevircek buda
     }
 }

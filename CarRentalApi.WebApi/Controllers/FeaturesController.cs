@@ -7,6 +7,7 @@ using CarRentalApi.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using CarRentalApi.Business.Operations.User;
 
 namespace CarRentalApi.WebApi.Controllers
 {
@@ -19,6 +20,14 @@ namespace CarRentalApi.WebApi.Controllers
         public FeaturesController(IFeatureService featureService)
         {
             _featureService = featureService;
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllFeatures()
+        {
+            var features = await _featureService.GetAllFeatures();
+            return Ok(features);
         }
 
         [HttpPost]

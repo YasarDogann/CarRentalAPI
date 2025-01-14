@@ -3,6 +3,7 @@ using CarRentalApi.Business.Types;
 using CarRentalApi.Data.Entities;
 using CarRentalApi.Data.Repositories;
 using CarRentalApi.Data.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,6 +90,18 @@ namespace CarRentalApi.Business.Operations.Feature
                 IsSucceed = true,
                 Message = "Silme işlemi başarıyla gerçekleşti"
             };
+        }
+
+        public async Task<List<FeatureDto>> GetAllFeatures()
+        {
+            var features = await _featureRepository.GetAll()
+                .Select(f => new FeatureDto
+                {
+                    Id = f.Id,
+                    Title = f.Title,
+                }).ToListAsync();
+
+            return features;
         }
 
         public async Task<ServiceMessage> UpdateFeature(UpdateFeatureDto feature)

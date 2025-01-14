@@ -17,7 +17,7 @@ namespace CarRentalApi.Business.DataProtection
         }
 
 
-        public string Protect(string text)
+        public string Protect(string text) // bunu kayıt yaptığım usermanager içerisinde kullanıcam
         {
             return _protector.Protect(text);
         }

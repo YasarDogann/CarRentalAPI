@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Business.Operations.User.Dtos
 {
+    // kayıt olurken contorller tarafından hangi bilgileri business tarafına aktarmam gerekiyorsa buraya yazıcam  
     public class AddUserDto
     {
         public string Email { get; set; }

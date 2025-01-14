@@ -30,6 +30,7 @@ namespace CarRentalApi.Business.Operations.User
 
         public async Task<ServiceMessage> AddUser(AddUserDto user)
         {
+            // şimdi bize user bilgileri geldi api'den bakalım user bilgileri vt'da var mı?
             var hasMail = _userRepository.GetAll(x => x.Email.ToLower() == user.Email.ToLower());
 
             if (hasMail.Any())
@@ -41,12 +42,13 @@ namespace CarRentalApi.Business.Operations.User
                 };
             }
 
+            // dto olarak elimizdeki verileri bu sefer user entity'e çevirdik
             var userEntity = new UserEntity()
             {
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Password = _protector.Protect(user.Password),
+                Password = _protector.Protect(user.Password), // şifreleme yaptık
                 BirthDate = user.BirthDate,
                 UserType = UserType.Customer 
             };
@@ -133,8 +135,11 @@ namespace CarRentalApi.Business.Operations.User
             return user;
         }
 
+        // user : kullanıcının attığı json
+        // userEntity = Veri tabanından gelen
         public ServiceMessage<UserInfoDto> LoginUser(LoginUserDto user)
         {
+            // form üzerinden gönderilen user ile vt da böyle bir kullanıcı mail'i var mı? 
             var userEntity = _userRepository.Get(x => x.Email.ToLower() == user.Email.ToLower());
 
             if (userEntity is null)
@@ -146,7 +151,7 @@ namespace CarRentalApi.Business.Operations.User
                 };
             }
 
-            // şifrelenmiş mesaj geliyor unprotect
+            // şimdi kullanıcıdan gelen şifre normal string ama vt'da şifrelenmiş bir şekilde bunları eşleyemeez bunun için unprotected yapıcaz
             var unprotectedPass = _protector.UnProtect(userEntity.Password);
 
             if (unprotectedPass == user.Password)
@@ -154,7 +159,7 @@ namespace CarRentalApi.Business.Operations.User
                 return new ServiceMessage<UserInfoDto>
                 {
                     IsSucceed = true,
-                    Data = new UserInfoDto
+                    Data = new UserInfoDto // burada da vt'dan çektiklerimizi cvontroller'a gönderiyotruz
                     {
                         Email = userEntity.Email,
                         FirstName = userEntity.FirstName,
@@ -163,7 +168,7 @@ namespace CarRentalApi.Business.Operations.User
                     }
                 };
             }
-            else
+            else //aksi durumda yani şifreler eşleşmediyse
             {
                 return new ServiceMessage<UserInfoDto>
                 {

@@ -9,6 +9,7 @@ namespace CarRentalApi.Business.Operations.User.Dtos
 {
     public class UserInfoDto
     {
+        // giriş işlemi başarılı olduktan sonra token oluşturmak için kullanıcağımız dto
         public int Id { get; set; }
         public string Email { get; set; }
         public string FirstName { get; set; }
