@@ -11,5 +11,7 @@ namespace CarRentalApi.Business.Operations.Feature
     public interface IFeatureService
     {
         Task<ServiceMessage> AddFeature(AddFeatureDto feature);
+        Task<ServiceMessage> DeleteFeature(int id);
+        Task<ServiceMessage> UpdateFeature(UpdateFeatureDto feature);
     }
 }
