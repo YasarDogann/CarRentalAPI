@@ -97,7 +97,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseGlobalException(); // Global Exception Middleware added
+app.UseGlobalExceptionMiddleware(); // Global Exception Middleware added
 app.UseMaintenenceMode(); // Maintenence middleware added
 
 app.UseHttpsRedirection();

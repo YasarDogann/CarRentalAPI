@@ -1,6 +1,6 @@
-﻿using CarRentalApi.Business.Operations.Car;
+﻿using CarRentalApi.Business.Excepions;
+using CarRentalApi.Business.Operations.Car;
 using CarRentalApi.Business.Operations.Car.CarDtos;
-using CarRentalApi.WebApi.Exceptions;
 using CarRentalApi.WebApi.Filters;
 using CarRentalApi.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -29,10 +29,10 @@ namespace CarRentalApi.WebApi.Controllers
         {
             var car = await _carService.GetCar(id);
 
-            if(car is null)
+            if (car is null)
             {
                 // return NotFound();
-                throw new NotFoundException($"{id}'li araç bulunamadı");
+                throw new NotFoundException($"{id} id'li araç bulunamadı");
             }
             else
             {
@@ -48,7 +48,7 @@ namespace CarRentalApi.WebApi.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddCar(AddCarRequest request) // [FromBody]
         {
             var addCarDto = new AddCarDto
@@ -64,6 +64,8 @@ namespace CarRentalApi.WebApi.Controllers
 
             var result = await _carService.AddCar(addCarDto);
 
+            return Ok(result.Message);
+            /*
             if (!result.IsSucceed)
             {
                 return BadRequest(result.Message);
@@ -72,18 +74,16 @@ namespace CarRentalApi.WebApi.Controllers
             {
                 return Ok(result.Message);
             }
+            */
         }
 
         [HttpPatch("{id}/PricePerDay")]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdjustCarPrice(int id, decimal changeBy)
         {
             var result = await _carService.AdjustCarPrice(id, changeBy);
 
-            if (!result.IsSucceed)
-                return NotFound();
-            else
-                return Ok(result.Message); // todo : get yönlendirme yapılabilir
+            return Ok(result.Message); // todo : get yönlendirme yapılabilir
         }
 
         [HttpDelete("{id}")]
@@ -92,10 +92,7 @@ namespace CarRentalApi.WebApi.Controllers
         {
             var result = await _carService.DeleteCar(id);
 
-            if (!result.IsSucceed)
-                return NotFound(result.Message);
-            else
-                return Ok(result.Message);
+            return Ok(result.Message);
         }
 
         [HttpPut("{id}")]
@@ -117,10 +114,7 @@ namespace CarRentalApi.WebApi.Controllers
 
             var result = await _carService.UpdateCar(updateCarDto);
 
-            if(!result.IsSucceed)
-                return NotFound(result.Message);
-            else
-                return await GetCar(id);
+            return await GetCar(id);
         }
     }
 }

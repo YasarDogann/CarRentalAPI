@@ -1,16 +1,19 @@
-﻿using CarRentalApi.WebApi.Exceptions;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
+using CarRentalApi.Business.Excepions;
+using Microsoft.Extensions.Logging;
 
 namespace CarRentalApi.WebApi.Middlewares
 {
     public class GlobalExceptionMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly IWebHostEnvironment _env;
 
-        public GlobalExceptionMiddleware(RequestDelegate next)
+        public GlobalExceptionMiddleware(RequestDelegate next, IWebHostEnvironment env)
         {
             _next = next;
+            _env = env;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -19,35 +22,63 @@ namespace CarRentalApi.WebApi.Middlewares
             {
                 await _next(context);
             }
-            catch (Exception ex)
+            catch (Exception error)
             {
+                var response = context.Response;
+                response.ContentType = "application/json";
 
-                await HandleExceptionAsync(context, ex);
+                var errorResponse = new ErrorResponse
+                {
+                    Success = false,
+                    StatusCode = error switch
+                    {
+                        CustomException e => e.StatusCode,
+                        KeyNotFoundException => StatusCodes.Status404NotFound,
+                        _ => StatusCodes.Status500InternalServerError
+                    }
+                };
+
+                switch (error)
+                {
+                    case CustomException e:
+                        errorResponse.Message = e.Message;
+                        break;
+                    case KeyNotFoundException:
+                        errorResponse.Message = "Kaynak bulunamadı";
+                        break;
+                    default:
+                        errorResponse.Message = "Beklenmeyen bir hata oluştu";
+                        if (_env.IsDevelopment())
+                        {
+                            errorResponse.Detail = error.Message;
+                        }
+                        break;
+                }
+
+                var result = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                response.StatusCode = errorResponse.StatusCode;
+                await response.WriteAsync(result);
             }
         }
+    }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception ex) 
+    public class ErrorResponse
+    {
+        public bool Success { get; set; }
+        public int StatusCode { get; set; }
+        public string Message { get; set; }
+        public string Detail { get; set; }
+    }
+
+    public static class GlobalExceptionMiddlewareExtensions
+    {
+        public static IApplicationBuilder UseGlobalExceptionMiddleware(this IApplicationBuilder builder)
         {
-            context.Response.ContentType = "application/json";
-
-            // Default Status Code
-            var statusCode = (int)HttpStatusCode.InternalServerError;
-
-            //custom handling for NotFoundException
-            if(ex is NotFoundException)
-            {
-                statusCode = (int)HttpStatusCode.NotFound;
-            }
-
-            context.Response.StatusCode = statusCode;
-
-            var result = JsonSerializer.Serialize(new
-            {
-                error = ex.Message,
-                statusCode = statusCode
-            });
-            
-            return context.Response.WriteAsync(result);
+            return builder.UseMiddleware<GlobalExceptionMiddleware>();
         }
     }
 }

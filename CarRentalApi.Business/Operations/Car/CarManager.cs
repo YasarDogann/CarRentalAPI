@@ -4,11 +4,13 @@ using CarRentalApi.Data.Entities;
 using CarRentalApi.Data.Repositories;
 using CarRentalApi.Data.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
+using CarRentalApi.Business.Excepions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace CarRentalApi.Business.Operations.Car
 {
@@ -31,11 +33,8 @@ namespace CarRentalApi.Business.Operations.Car
 
             if (hasCar)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Bu araç zaten sistemde mevcut",
-                };
+                // Global Exception Handling
+                throw new BadRequestException("Bu araç zaten sistemde mevcut");
             }
 
             await _unitOfWork.BeginTransaction();
@@ -59,7 +58,7 @@ namespace CarRentalApi.Business.Operations.Car
             catch (Exception)
             {
 
-                throw new Exception("Araç kaydı sırasında bir hata oluştu");
+                throw new CustomException("Araç kaydı sırasında bir hata oluştu");
             }
 
             foreach (var featureId in car.FeatureIds)
@@ -81,7 +80,7 @@ namespace CarRentalApi.Business.Operations.Car
             catch (Exception)
             {
                 await _unitOfWork.RollBackTransction();
-                throw new Exception("Araç özellikleri eklenirken bir hata oluştu, süreç başa alındı.");
+                throw new CustomException("Araç özellikleri eklenirken bir hata oluştu, süreç başa alındı.",500);
             }
 
             return new ServiceMessage
@@ -97,11 +96,7 @@ namespace CarRentalApi.Business.Operations.Car
 
             if (car is null)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Bu id ile eşlesen bir araç bulunamadı."
-                };
+                throw new NotFoundException($"{id} numaralı araç bulunamadı");
             }
 
             car.PricePerDay = changeBy;
@@ -114,7 +109,7 @@ namespace CarRentalApi.Business.Operations.Car
             }
             catch (Exception)
             {
-                throw new Exception("Günlük ücret değiştirilirken bir hata oluştu");
+                throw new CustomException("Günlük ücret değiştirilirken bir hata oluştu",500);
             }
 
             return new ServiceMessage
@@ -130,11 +125,7 @@ namespace CarRentalApi.Business.Operations.Car
 
             if (car is null)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Silinmek istenen araba bulunamadı."
-                };
+                throw new NotFoundException($"{id} numaralı silinmek istenen araç bulunamadı");
             }
 
             _carRepository.Delete(id);
@@ -146,7 +137,7 @@ namespace CarRentalApi.Business.Operations.Car
             catch (Exception)
             {
 
-                throw new Exception("Silme işlemi sırasında bir hata oluştu.");
+                throw new CustomException("Silme işlemi sırasında bir hata oluştu.",500);
             }
 
             return new ServiceMessage
@@ -206,11 +197,7 @@ namespace CarRentalApi.Business.Operations.Car
 
             if(carEntity is null)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Araba bulunamadı."
-                };
+                throw new NotFoundException($"{car.Id} numaralı güncellenecek araç bulunamadı");
             }
 
             // önce car tablosunda daha sonra carFeature tablosunda güncelleme yapıcam.
@@ -233,14 +220,14 @@ namespace CarRentalApi.Business.Operations.Car
             catch (Exception)
             {
                 await _unitOfWork.RollBackTransction();
-                throw new Exception("Araba bilgileri güncellenirken bir hata ile karşılaşıldı");
+                throw new CustomException("Araba bilgileri güncellenirken bir hata ile karşılaşıldı",500);
             }
 
             var carFeatures = _carFeatureRepository.GetAll(c => c.CarId == c.CarId).ToList();
 
             foreach(var carFeature in carFeatures)
             {
-                _carFeatureRepository.Delete(carFeature, false); // HArd Delete
+                _carFeatureRepository.Delete(carFeature, false); // Hard Delete
             }
 
             foreach (var featureId in car.FeatureIds)
@@ -261,7 +248,7 @@ namespace CarRentalApi.Business.Operations.Car
             catch (Exception)
             {
                 await _unitOfWork.RollBackTransction();
-                throw new Exception("Araba bilgileri güncellenirken bir hata oluştu. İşlemler başa alınıyor");
+                throw new CustomException("Araba bilgileri güncellenirken bir hata oluştu. İşlemler başa alınıyor", 500);
             }
 
             return new ServiceMessage

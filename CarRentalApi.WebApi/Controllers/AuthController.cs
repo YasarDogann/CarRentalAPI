@@ -1,6 +1,6 @@
-﻿using CarRentalApi.Business.Operations.User;
+﻿using CarRentalApi.Business.Excepions;
+using CarRentalApi.Business.Operations.User;
 using CarRentalApi.Business.Operations.User.Dtos;
-using CarRentalApi.WebApi.Exceptions;
 using CarRentalApi.WebApi.Jwt;
 using CarRentalApi.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
