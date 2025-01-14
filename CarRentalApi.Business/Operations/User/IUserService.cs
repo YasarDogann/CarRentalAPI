@@ -1,4 +1,5 @@
-﻿using CarRentalApi.Business.Operations.User.Dtos;
+﻿using CarRentalApi.Business.Operations.Car.CarDtos;
+using CarRentalApi.Business.Operations.User.Dtos;
 using CarRentalApi.Business.Types;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,7 @@ namespace CarRentalApi.Business.Operations.User
     {
         Task<ServiceMessage> AddUser(AddUserDto user); // async çünkü unit of work kullanılacak
         ServiceMessage<UserInfoDto> LoginUser(LoginUserDto user);
+        Task<ServiceMessage> UpdateUser(UpdateUserDto user);
+        Task<List<UserDto>> GetAllUsers();
     }
 }

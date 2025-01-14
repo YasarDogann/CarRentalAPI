@@ -19,6 +19,17 @@ namespace CarRentalApi.WebApi.Controllers
             _userService = userService;
         }
 
+        [HttpGet]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _userService.GetAllUsers();
+
+            
+            
+            return Ok(users);
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
@@ -79,6 +90,33 @@ namespace CarRentalApi.WebApi.Controllers
                 Message = "Giriş Başarıyla Gerçekleşti",
                 Token = token
             });// şmdi biz burda 200 ile dönmek istemiyoruz sadece tokenı da vermek lazım ve grişi yaıpldı falan mesajı göstermek istiyoruz. Models/LoginResponce
+        }
+
+        [HttpPut("{id}/Update")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserRequest request)
+        {
+            var updateUserDto = new UpdateUserDto
+            {
+                Id = id,
+                Email = request.Email,
+                Password = request.Password,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                BirthDate = DateTime.Now,
+                UserType = request.UserType,
+            };
+
+            var result = await _userService.UpdateUser(updateUserDto);
+
+            if (!result.IsSucceed)
+            {
+                return NotFound(result.Message);
+            }
+            else
+            {
+                return Ok(result.Message);
+            }
         }
 
         [HttpGet("me")]

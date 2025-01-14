@@ -8,7 +8,7 @@ namespace CarRentalApi.Data.Enums
 {
     public enum UserType
     {
-        Admin,
-        Customer
+        Admin ,
+        Customer 
     }
 }

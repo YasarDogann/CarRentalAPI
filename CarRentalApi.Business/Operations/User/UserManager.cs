@@ -5,6 +5,7 @@ using CarRentalApi.Data.Entities;
 using CarRentalApi.Data.Enums;
 using CarRentalApi.Data.Repositories;
 using CarRentalApi.Data.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +69,22 @@ namespace CarRentalApi.Business.Operations.User
             };
         }
 
+        public async Task<List<UserDto>> GetAllUsers()
+        {
+            var users = await _userRepository.GetAll()
+                .Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Email = u.Email,
+                    Password = u.Password,
+                    BirthDate = u.BirthDate,
+                    UserType = u.UserType == UserType.Admin ? "Admin" : "Customer"  // Enum değerini metne dönüştürüyoruz
+                }).ToListAsync();
+            return users;
+        }
+
         public ServiceMessage<UserInfoDto> LoginUser(LoginUserDto user)
         {
             var userEntity = _userRepository.Get(x => x.Email.ToLower() == user.Email.ToLower());
@@ -106,6 +123,45 @@ namespace CarRentalApi.Business.Operations.User
                     Message = "Kullanıcı adı veya şifre hatalı."
                 };
             }
+        }
+
+        public async Task<ServiceMessage> UpdateUser(UpdateUserDto user)
+        {
+            var userEntity = _userRepository.GetById(user.Id);
+            
+            if(userEntity is null)
+            {
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "Kullanıcı Bulunamadı"
+                };
+            }
+
+            userEntity.Email = user.Email;
+            userEntity.Password = _protector.Protect(user.Password);
+            userEntity.FirstName = user.FirstName;
+            userEntity.LastName = user.LastName;
+            userEntity.BirthDate = user.BirthDate;
+            userEntity.UserType = user.UserType;
+
+            _userRepository.Update(userEntity);
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw new Exception("Kullanıcı bilgileri güncellenirken bir hata oluştu.");
+            }
+
+            return new ServiceMessage
+            {
+                IsSucceed = true,
+                Message = "Kullanıcı bilgileri güncelleme işlemi başarıyla gerçekleşti."
+            };
         }
     }
 }
