@@ -36,7 +36,7 @@ namespace CarRentalApi.WebApi.Controllers
         }
 
         [HttpGet("Users")]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsers();
@@ -48,7 +48,12 @@ namespace CarRentalApi.WebApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                throw new BadRequestException(string.Join(", ", errors));
             }
 
             var addUserDto = new AddUserDto
@@ -62,10 +67,8 @@ namespace CarRentalApi.WebApi.Controllers
 
             var result = await _userService.AddUser(addUserDto);
 
-            if (result.IsSucceed)
-                return Ok();
-            else 
-                return BadRequest(result.Message);
+            return Ok(result.Message);
+
         }
 
         [HttpPost("login")]
@@ -75,6 +78,7 @@ namespace CarRentalApi.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             var result = _userService.LoginUser(new LoginUserDto { Email = request.Email, Password = request.Password });
 
             if (!result.IsSucceed)
@@ -106,7 +110,7 @@ namespace CarRentalApi.WebApi.Controllers
         }
 
         [HttpPut("{id}/Update")]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserRequest request)
         {
             var updateUserDto = new UpdateUserDto
@@ -122,27 +126,17 @@ namespace CarRentalApi.WebApi.Controllers
 
             var result = await _userService.UpdateUser(updateUserDto);
 
-            if (!result.IsSucceed)
-            {
-                return NotFound(result.Message);
-            }
-            else
-            {
-                return Ok(result.Message);
-            }
+            return Ok(result.Message);
+
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles ="Admin")] 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var result = await _userService.DeleteUser(id);
-
-            if (!result.IsSucceed)
-                return NotFound(result.Message);
-            else
-                return Ok(result.Message);
+            return Ok(result.Message);
         }
 
-    }   
+    }
 }

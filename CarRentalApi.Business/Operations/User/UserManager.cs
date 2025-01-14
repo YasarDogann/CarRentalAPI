@@ -1,4 +1,5 @@
 ﻿using CarRentalApi.Business.DataProtection;
+using CarRentalApi.Business.Excepions;
 using CarRentalApi.Business.Operations.User.Dtos;
 using CarRentalApi.Business.Types;
 using CarRentalApi.Data.Entities;
@@ -35,11 +36,7 @@ namespace CarRentalApi.Business.Operations.User
 
             if (hasMail.Any())
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Email adresi zaten mevcut"
-                };
+                throw new BadRequestException("Bu kullanıcı zaten sistemde mevcut");
             }
 
             // dto olarak elimizdeki verileri bu sefer user entity'e çevirdik
@@ -62,12 +59,13 @@ namespace CarRentalApi.Business.Operations.User
             catch (Exception)
             {
 
-                throw new Exception("Kullanıcı kaydı sırasında bir hata oluştu");
+                throw new CustomException("Kullanıcı kaydı sırasında bir hata oluştu",500);
             }
 
             return new ServiceMessage
             {
-                IsSucceed = true
+                IsSucceed = true,
+                Message = "Kullanıcı Kaydı Başarıyla Gerçekleşti."
             };
         }
 
@@ -77,11 +75,7 @@ namespace CarRentalApi.Business.Operations.User
 
             if(user is null)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Silinmek istenen kullanıcı bulunamadı."
-                };
+                throw new NotFoundException($"{id} numaralı kullanıcı bulunamadı");
             }
 
             _userRepository.Delete(id);
@@ -92,8 +86,7 @@ namespace CarRentalApi.Business.Operations.User
             }
             catch (Exception)
             {
-
-                throw new Exception("Silme işlemi sırasında bir hata oluştu.");
+                throw new CustomException("Silme işlemi sırasında bir hata oluştu", 500);
             }
 
             return new ServiceMessage
@@ -152,8 +145,11 @@ namespace CarRentalApi.Business.Operations.User
             }
 
             // şimdi kullanıcıdan gelen şifre normal string ama vt'da şifrelenmiş bir şekilde bunları eşleyemeez bunun için unprotected yapıcaz
+            // 2. Şifre Kontrolü
+            // Veritabanındaki hashlenmiş şifreyi çözüyoruz
             var unprotectedPass = _protector.UnProtect(userEntity.Password);
 
+            // Şifreleri karşılaştırıyoruz
             if (unprotectedPass == user.Password)
             {
                 return new ServiceMessage<UserInfoDto>
@@ -184,13 +180,10 @@ namespace CarRentalApi.Business.Operations.User
             
             if(userEntity is null)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Kullanıcı Bulunamadı"
-                };
+                throw new NotFoundException($"{user.Id} numaralı kullanıcı bulunamadı");
             }
 
+            // 2. Bilgileri Güncelleme
             userEntity.Email = user.Email;
             userEntity.Password = _protector.Protect(user.Password);
             userEntity.FirstName = user.FirstName;
@@ -202,14 +195,16 @@ namespace CarRentalApi.Business.Operations.User
 
             try
             {
+                // 3. Değişiklikleri Kaydetme
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception)
             {
-
-                throw new Exception("Kullanıcı bilgileri güncellenirken bir hata oluştu.");
+                // 4. Hata Yönetimi
+                throw new CustomException("Kullanıcı bilgileri güncellenirken bir hata oluştu", 500);
             }
 
+            // 5. Başarılı Sonuç
             return new ServiceMessage
             {
                 IsSucceed = true,
