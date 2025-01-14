@@ -8,13 +8,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CarRentalApi.Business.Operations.User;
+using CarRentalApi.Business.Excepions;
 
 namespace CarRentalApi.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class FeaturesController : ControllerBase
-    { 
+    {
         private readonly IFeatureService _featureService;
 
         public FeaturesController(IFeatureService featureService)
@@ -31,7 +32,7 @@ namespace CarRentalApi.WebApi.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddFeature(AddFeatureRequest request)
         {
             var addFeatureDto = new AddFeatureDto
@@ -39,12 +40,10 @@ namespace CarRentalApi.WebApi.Controllers
                 Title = request.Title,
             };
 
-            var result  = await _featureService.AddFeature(addFeatureDto);
+            var result = await _featureService.AddFeature(addFeatureDto);
 
-            if(result.IsSucceed)
-                return Ok(result.Message);
-            else
-                return BadRequest(result.Message);
+            return Ok(result.Message);
+
         }
 
         [HttpDelete("{id}")]
@@ -52,17 +51,23 @@ namespace CarRentalApi.WebApi.Controllers
         public async Task<IActionResult> DeleteFeature(int id)
         {
             var result = await _featureService.DeleteFeature(id);
-
-            if (!result.IsSucceed)
-                return NotFound(result.Message);
-            else
-                return Ok(result.Message);
+            return Ok(result.Message);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateFeature(int id, UpdateFeatureRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                throw new BadRequestException(string.Join(", ", errors));
+            }
+
             var updateFeatureDto = new UpdateFeatureDto
             {
                 Id = id,
@@ -71,10 +76,7 @@ namespace CarRentalApi.WebApi.Controllers
 
             var result = await _featureService.UpdateFeature(updateFeatureDto);
 
-            if (!result.IsSucceed)
-                return NotFound(result.Message);
-            else
-                return Ok(result.Message);
+            return Ok(result.Message);
         }
     }
 }

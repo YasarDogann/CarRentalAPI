@@ -1,4 +1,5 @@
-﻿using CarRentalApi.Business.Operations.Feature.Dtos;
+﻿using CarRentalApi.Business.Excepions;
+using CarRentalApi.Business.Operations.Feature.Dtos;
 using CarRentalApi.Business.Types;
 using CarRentalApi.Data.Entities;
 using CarRentalApi.Data.Repositories;
@@ -25,34 +26,35 @@ namespace CarRentalApi.Business.Operations.Feature
 
         public async Task<ServiceMessage> AddFeature(AddFeatureDto feature)
         {
+            // 1. Özellik Kontrolü
             var hasFeature = _featureRepository.GetAll(x => x.Title.ToLower() == feature.Title.ToLower()).Any();
 
             if (hasFeature)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Özellik zaten bulunuyor"
-                };
+                throw new BadRequestException("Bu özellik zaten sistemde mevcut");
             }
 
+            // 2. Entity Oluşturma
             var featureEntity = new FeatureEntity
             {
                 Title = feature.Title,
             };
 
+            // 3. Veritabanına Ekleme
             _featureRepository.Add(featureEntity);
 
             try
             {
-                await  _unitOfWork.SaveChangesAsync();
+                // 4. Değişiklikleri Kaydetme
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception)
             {
-
-                throw new Exception("Özellik kaydı sırasında bir hata oluştu.");
+                // 5. Hata Yönetimi
+                throw new CustomException("Özellik kaydı sırasında bir hata oluştu", 500);
             }
 
+            // 6. Başarılı Sonuç
             return new ServiceMessage
             {
                 IsSucceed = true,
@@ -62,29 +64,29 @@ namespace CarRentalApi.Business.Operations.Feature
 
         public async Task<ServiceMessage> DeleteFeature(int id)
         {
+            // 1. Özellik Kontrolü
             var feture = _featureRepository.GetById(id);
 
             if (feture is null)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Silinmek istenen özellik bulunamadı."
-                };
+                throw new NotFoundException($"{id} numaralı özellik bulunamadı");
             }
 
+            // 2. Silme İşlemi
             _featureRepository.Delete(id);
 
             try
             {
+                // 3. Değişiklikleri Kaydetme
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception)
             {
-
-                throw new Exception("Silme işlemi sırasında bir hata oluştu.");
+                // 4. Hata Yönetimi
+                throw new CustomException("Silme işlemi sırasında bir hata oluştu", 500);
             }
 
+            // 5. Başarılı Sonuç
             return new ServiceMessage
             {
                 IsSucceed = true,
@@ -106,31 +108,31 @@ namespace CarRentalApi.Business.Operations.Feature
 
         public async Task<ServiceMessage> UpdateFeature(UpdateFeatureDto feature)
         {
+            // 1. Özellik Kontrolü
             var featureEntity = _featureRepository.GetById(feature.Id);
 
             if (featureEntity is null)
             {
-                return new ServiceMessage
-                {
-                    IsSucceed = false,
-                    Message = "Özellik Bulunamadı."
-                };
+                throw new NotFoundException($"{feature.Id} numaralı özellik bulunamadı");
             }
 
+            // 2. Bilgileri Güncelleme
             featureEntity.Title = feature.Title;    
 
             _featureRepository.Update(featureEntity);
 
             try
             {
+                // 3. Değişiklikleri Kaydetme
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception)
             {
-
-                throw new Exception("Özellik güncellenirken hata oluştu.");
+                // 4. Hata Yönetimi
+                throw new CustomException("Özellik güncellenirken bir hata oluştu", 500);
             }
 
+            // 5. Başarılı Sonuç
             return new ServiceMessage
             {
                 IsSucceed = true,
