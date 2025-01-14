@@ -1,5 +1,6 @@
 ﻿using CarRentalApi.Business.Operations.User;
 using CarRentalApi.Business.Operations.User.Dtos;
+using CarRentalApi.WebApi.Exceptions;
 using CarRentalApi.WebApi.Jwt;
 using CarRentalApi.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -19,14 +20,26 @@ namespace CarRentalApi.WebApi.Controllers
             _userService = userService;
         }
 
-        [HttpGet]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var user = await _userService.GetUser(id);
+
+            if (user is null)
+            {
+                throw new NotFoundException("{id}'li kullanıcı bulunamadı.");
+            }
+            else
+            {
+                return Ok(user);
+            }
+        }
+
+        [HttpGet("Users")]
         [Authorize(Roles ="Admin")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsers();
-
-            
-            
             return Ok(users);
         }
 
@@ -119,11 +132,16 @@ namespace CarRentalApi.WebApi.Controllers
             }
         }
 
-        [HttpGet("me")]
-        [Authorize] // tokıen yoksa cevap yok
-        public IActionResult GetMyUser()
+        [HttpDelete("{id}")]
+        [Authorize(Roles ="Admin")] 
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            return Ok();
+            var result = await _userService.DeleteUser(id);
+
+            if (!result.IsSucceed)
+                return NotFound(result.Message);
+            else
+                return Ok(result.Message);
         }
     }   
 }

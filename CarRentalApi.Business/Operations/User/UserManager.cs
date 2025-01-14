@@ -69,6 +69,38 @@ namespace CarRentalApi.Business.Operations.User
             };
         }
 
+        public async Task<ServiceMessage> DeleteUser(int id)
+        {
+            var user = _userRepository.GetById(id);
+
+            if(user is null)
+            {
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "Silinmek istenen kullanıcı bulunamadı."
+                };
+            }
+
+            _userRepository.Delete(id);
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw new Exception("Silme işlemi sırasında bir hata oluştu.");
+            }
+
+            return new ServiceMessage
+            {
+                IsSucceed = true,
+                Message = "Silme işlemi başarıyla gerçekleşti."
+            };
+        }
+
         public async Task<List<UserDto>> GetAllUsers()
         {
             var users = await _userRepository.GetAll()
@@ -83,6 +115,22 @@ namespace CarRentalApi.Business.Operations.User
                     UserType = u.UserType == UserType.Admin ? "Admin" : "Customer"  // Enum değerini metne dönüştürüyoruz
                 }).ToListAsync();
             return users;
+        }
+
+        public async Task<UserDto> GetUser(int id)
+        {
+            var user = await _userRepository.GetAll(x => x.Id == id)
+                .Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Password = u.Password,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    BirthDate = u.BirthDate,
+                    UserType = u.UserType == UserType.Admin ? "Admin" : "Customer"
+                }).FirstOrDefaultAsync();
+            return user;
         }
 
         public ServiceMessage<UserInfoDto> LoginUser(LoginUserDto user)

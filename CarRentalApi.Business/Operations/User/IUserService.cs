@@ -15,5 +15,7 @@ namespace CarRentalApi.Business.Operations.User
         ServiceMessage<UserInfoDto> LoginUser(LoginUserDto user);
         Task<ServiceMessage> UpdateUser(UpdateUserDto user);
         Task<List<UserDto>> GetAllUsers();
+        Task<UserDto> GetUser(int id);
+        Task<ServiceMessage> DeleteUser(int id);
     }
 }
