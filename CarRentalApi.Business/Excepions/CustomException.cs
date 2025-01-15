@@ -38,4 +38,12 @@ namespace CarRentalApi.Business.Excepions
         {
         }
     }
+
+    // 403 Forbidden hatası için özel sınıf
+    public class ForbiddenException : CustomException
+    {
+        public ForbiddenException(string message) : base(message, 403)
+        {
+        }
+    }
 }

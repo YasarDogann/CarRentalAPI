@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +73,38 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true, // süresi dolan token'ý kabul etme
 
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!))
+        };
+
+        // Yetkilendirme hatalarýný yakalayýp özel mesaj döndürmek için
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                // Varsayýlan iþlemi engelle
+                context.HandleResponse();
+
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+                var result = JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    statusCode = 401,
+                    message = "Oturum açmanýz gerekiyor"
+                });
+                await context.Response.WriteAsync(result);
+            },
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode = 403;
+                context.Response.ContentType = "application/json";
+                var result = JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    statusCode = 403,
+                    message = "Bu iþlem için yetkiniz bulunmuyor"
+                });
+                await context.Response.WriteAsync(result);
+            }
         };
     });
 
