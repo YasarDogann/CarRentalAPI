@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Data.Entities
 {
+    // Kullanıcı bilgilerini tutan entity sınıfı
+    // Entity class that holds user information
     public class UserEntity : BaseEntity
     {
         public string FirstName { get; set; }

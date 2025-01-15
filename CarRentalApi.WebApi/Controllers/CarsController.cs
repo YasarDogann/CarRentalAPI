@@ -13,6 +13,9 @@ using System.Runtime.CompilerServices;
 
 namespace CarRentalApi.WebApi.Controllers
 {
+    // Araç işlemlerini yöneten API controller sınıfı
+    // API controller class that manages car operations
+
     [Route("api/[controller]")]
     [ApiController]
     public class CarsController : ControllerBase
@@ -97,7 +100,7 @@ namespace CarRentalApi.WebApi.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        [TimeControlFilter]
+       // [TimeControlFilter]
         public async Task<IActionResult> UpdateCar(int id, UpdateCarRequest request)
         {
             var updateCarDto = new UpdateCarDto

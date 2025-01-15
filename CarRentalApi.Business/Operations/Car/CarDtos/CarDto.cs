@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Business.Operations.Car.CarDtos
 {
+    // Araç bilgilerini taşıyan DTO sınıfı
+    // DTO class that carries car information
     public class CarDto
     {
         public int Id { get; set; }

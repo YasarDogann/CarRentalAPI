@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CarRentalApi.Business.Operations.Car.CarDtos;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +11,6 @@ namespace CarRentalApi.Business.Operations.Feature.Dtos
     {
         public int Id { get; set; } 
         public string Title { get; set; }
+        public List<CarDto> Cars { get; set; }
     }
 }

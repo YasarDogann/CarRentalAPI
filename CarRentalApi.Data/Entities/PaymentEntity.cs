@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Data.Entities
 {
+    // Ödeme bilgilerini tutan entity sınıfı
+    // Entity class that holds payment information
     public class PaymentEntity : BaseEntity
     {
         public decimal Amount { get; set; } // ücret

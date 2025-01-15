@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Data.Entities
 {
+    // Araç ve özellikleri arasındaki çoka-çok ilişkiyi sağlayan ara tablo entity'si
+    // Junction table entity that provides many-to-many relationship between cars and features
     public class CarFeatureEntity : BaseEntity
     {
         // hangi arabada hangi özellik var ?
@@ -22,7 +24,10 @@ namespace CarRentalApi.Data.Entities
     {
         public override void Configure(EntityTypeBuilder<CarFeatureEntity> builder)
         {
-            builder.Ignore(x => x.Id); // Id property görmezden gelindi tabloya aktarılmayacak
+            // Id alanını yoksay (composite key kullanılacak)
+            // Ignore Id field (will use composite key)
+            builder.Ignore(x => x.Id); 
+
             builder.HasKey("CarId", "FeatureId"); // Composite key oluşturup PK olarak atandı
 
 

@@ -1,4 +1,5 @@
 ﻿using CarRentalApi.Business.Excepions;
+using CarRentalApi.Business.Operations.Car.CarDtos;
 using CarRentalApi.Business.Operations.Feature.Dtos;
 using CarRentalApi.Business.Types;
 using CarRentalApi.Data.Entities;
@@ -13,6 +14,8 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Business.Operations.Feature
 {
+    // Araç özelliklerini yöneten servis sınıfı
+    // Service class that manages car features
     public class FeatureManager : IFeatureService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,6 +27,9 @@ namespace CarRentalApi.Business.Operations.Feature
             _featureRepository = featureRepository;
         }
 
+
+        // Yeni özellik ekleme
+        // Add new feature
         public async Task<ServiceMessage> AddFeature(AddFeatureDto feature)
         {
             // 1. Özellik Kontrolü
@@ -62,6 +68,8 @@ namespace CarRentalApi.Business.Operations.Feature
             };
         }
 
+        // Özellik silme
+        // Delete feature
         public async Task<ServiceMessage> DeleteFeature(int id)
         {
             // 1. Özellik Kontrolü
@@ -94,6 +102,8 @@ namespace CarRentalApi.Business.Operations.Feature
             };
         }
 
+        // Tüm özellikleri listeleme
+        // List all features
         public async Task<List<FeatureDto>> GetAllFeatures()
         {
             var features = await _featureRepository.GetAll()
@@ -101,11 +111,23 @@ namespace CarRentalApi.Business.Operations.Feature
                 {
                     Id = f.Id,
                     Title = f.Title,
+                    Cars = f.CarFeatures.Select(cf => new CarDto
+                    {
+                        Id = cf.Car.Id,
+                        Make = cf.Car.Make,
+                        Model = cf.Car.Model,
+                        Year = cf.Car.Year,
+                        PricePerDay = cf.Car.PricePerDay,
+                        StockQuantity = cf.Car.StockQuantity,
+                        VehicleType = cf.Car.VehicleType
+                    }).ToList()
                 }).ToListAsync();
 
             return features;
         }
 
+        // Özellik güncelleme
+        // Update feature
         public async Task<ServiceMessage> UpdateFeature(UpdateFeatureDto feature)
         {
             // 1. Özellik Kontrolü

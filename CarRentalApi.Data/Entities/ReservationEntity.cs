@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Data.Entities
 {
+    // Araç rezervasyon bilgilerini tutan entity sınıfı
+    // Entity class that holds car reservation information
     public class ReservationEntity : BaseEntity
     {
         public int CarId { get; set; }

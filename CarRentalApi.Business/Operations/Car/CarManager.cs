@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Business.Operations.Car
 {
+    // Araç işlemlerini yöneten servis sınıfı
+    // Service class that manages car operations
     public class CarManager : ICarService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -27,9 +29,11 @@ namespace CarRentalApi.Business.Operations.Car
             _carFeatureRepository = carFeatureRepository;
         }
 
+        // Yeni araç ekleme
+        // Add new car
         public async Task<ServiceMessage> AddCar(AddCarDto car)
         {
-            var hasCar = _carRepository.GetAll(c => c.Make.ToLower() == car.Make.ToLower()).Any();
+            var hasCar = _carRepository.GetAll(c => c.Model.ToLower() == car.Model.ToLower()).Any();
 
             if (hasCar)
             {
@@ -39,6 +43,9 @@ namespace CarRentalApi.Business.Operations.Car
 
             await _unitOfWork.BeginTransaction();
 
+
+            // Araç entity'sini oluşturma
+            // Create car entity
             var carEntity = new CarEntity
             {
                 Make = car.Make,
@@ -61,6 +68,8 @@ namespace CarRentalApi.Business.Operations.Car
                 throw new CustomException("Araç kaydı sırasında bir hata oluştu");
             }
 
+            // Araç özelliklerini ekleme
+            // Add car features
             foreach (var featureId in car.FeatureIds)
             {
                 var carFeature = new CarFeatureEntity
@@ -90,6 +99,9 @@ namespace CarRentalApi.Business.Operations.Car
             };
         }
 
+
+        // Araç fiyatını güncelleme
+        // Update car price
         public async Task<ServiceMessage> AdjustCarPrice(int id, decimal changeBy)
         {
             var car = _carRepository.GetById(id);
@@ -119,6 +131,9 @@ namespace CarRentalApi.Business.Operations.Car
             };
         }
 
+
+        // Araç silme
+        // Delete car
         public async Task<ServiceMessage> DeleteCar(int id)
         {
             var car = _carRepository.GetById(id);
@@ -147,6 +162,8 @@ namespace CarRentalApi.Business.Operations.Car
             };
         }
 
+        // Tüm araçları listeleme
+        // List all cars
         public async Task<List<CarDto>> GetAllCars()
         {
             var cars = await _carRepository.GetAll()
@@ -169,6 +186,8 @@ namespace CarRentalApi.Business.Operations.Car
             return cars;
         }
 
+        // ID'ye göre araç getirme
+        // Get car by ID
         public async Task<CarDto> GetCar(int id)
         {
             var car = await _carRepository.GetAll(x => x.Id == id)
@@ -191,6 +210,9 @@ namespace CarRentalApi.Business.Operations.Car
             return car;
         }
 
+
+        // Araç bilgilerini güncelleme
+        // Update car information
         public async Task<ServiceMessage> UpdateCar(UpdateCarDto car)
         {
             var carEntity = _carRepository.GetById(car.Id);
@@ -204,6 +226,8 @@ namespace CarRentalApi.Business.Operations.Car
             // 2 ayrı tablo üzerinde işlem yapacağımdan dolayı Transaction açıyorum 
             await _unitOfWork.BeginTransaction();
 
+            // Araç bilgilerini güncelleme
+            // Update car information
             carEntity.Make = car.Make;
             carEntity.Model = car.Model;
             carEntity.Year = (int)car.Year;
@@ -223,13 +247,15 @@ namespace CarRentalApi.Business.Operations.Car
                 throw new CustomException("Araba bilgileri güncellenirken bir hata ile karşılaşıldı",500);
             }
 
-            var carFeatures = _carFeatureRepository.GetAll(c => c.CarId == c.CarId).ToList();
+            var carFeatures = _carFeatureRepository.GetAll(c => c.CarId == car.Id).ToList();
 
-            foreach(var carFeature in carFeatures)
+            foreach (var carFeature in carFeatures)
             {
-                _carFeatureRepository.Delete(carFeature, false); // Hard Delete
+                _carFeatureRepository.Delete(carFeature, false); // Mevcut özellikleri -> Hard Delete
             }
 
+            // Yeni özellikleri ekleme
+            // Add new features
             foreach (var featureId in car.FeatureIds)
             {
                 var carFeature = new CarFeatureEntity

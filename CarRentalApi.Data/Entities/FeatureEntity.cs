@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 
 namespace CarRentalApi.Data.Entities
 {
+    // Araç özelliklerini tutan entity sınıfı
+    // Entity class that holds car features
     public class FeatureEntity : BaseEntity
     {
         public string Title { get; set; }
 
         // Relational Property
+        // Bu özelliğe sahip araçlar (çoka-çok ilişki)
+        // Cars that have this feature (many-to-many relationship)
         public ICollection<CarFeatureEntity> CarFeatures { get; set; }
     }
 

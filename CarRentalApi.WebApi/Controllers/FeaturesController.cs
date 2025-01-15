@@ -12,6 +12,8 @@ using CarRentalApi.Business.Excepions;
 
 namespace CarRentalApi.WebApi.Controllers
 {
+    // Araç özelliklerini yöneten API controller sınıfı
+    // API controller class that manages car features
     [Route("api/[controller]")]
     [ApiController]
     public class FeaturesController : ControllerBase
