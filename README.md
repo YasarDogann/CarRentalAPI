@@ -2,6 +2,21 @@
 
 Bu proje, araç kiralama işlemlerini yönetmek için geliştirilmiş bir RESTful API'dir. .NET 8 kullanılarak geliştirilmiş ve modern web API geliştirme pratiklerini içermektedir.
 
+
+## 📦 Kullanılan NuGet Paketleri
+
+### CarRentalApi.Data
+- Microsoft.EntityFrameworkCore (8.0.11)
+- Microsoft.EntityFrameworkCore.SqlServer (8.0.11)
+- Microsoft.EntityFrameworkCore.Tools (8.0.11)
+
+### CarRentalApi.Business
+- Microsoft.AspNetCore.DataProtection.Abstractions (8.0.11)
+
+### CarRentalApi.WebApi
+- Microsoft.AspNetCore.Authentication.JwtBearer (8.0.11)
+- Microsoft.EntityFrameworkCore.Design (8.0.11)
+
 ## 🏗️ Proje Yapısı
 
 Proje, N-Tier Architecture prensiplerine uygun olarak 3 katmandan oluşmaktadır:
